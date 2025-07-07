@@ -23,7 +23,7 @@ conv3x3_dense(const float *__restrict__ X,    // [B][C_in][H][W]
 
   int w = idx % W;
   int h = idx / W;
-  int c = threadIdx.y;
+  int c = threadIdx.y; // output channel idx
   int b = threadIdx.z;
   float tmp = bias[c];
 
@@ -37,7 +37,7 @@ conv3x3_dense(const float *__restrict__ X,    // [B][C_in][H][W]
       int d_h = start_h + i;
       if (d_w >= 0 && d_h >= 0 && d_w < W && d_h < H) {
         for (int c_in = 0; c_in < C_in; c_in++) {
-          int kernel_offset = ((C_out * C_in + c_in) * 3 + i) * 3 + j;
+          int kernel_offset = ((c * C_in + c_in) * 3 + i) * 3 + j; // which output idx >> which intput tensor idx >> which row >> which col
           int input_offset = ((b * C_in + c_in) * H + d_h) * W + d_w;
           tmp += K[kernel_offset] * X[input_offset];
         }
