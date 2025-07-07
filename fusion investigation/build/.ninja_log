@@ -1,0 +1,26 @@
+# ninja log v5
+652	698	1751921223141887832	CMakeFiles/fused_op.dir/cmake_device_link.o	e18b663369b23e5a
+698	762	1751921223205888856	fused_op	b64c7a4127bafa4
+0	22	1751921492393853436	build.ninja	640fc94e3bbf1b45
+0	651	1751921223093887064	CMakeFiles/fused_op.dir/fused_op.cu.o	32d7041c2424c516
+2	719	1751921497714926942	CMakeFiles/fused_op.dir/fused_op.cu.o	32d7041c2424c516
+719	747	1751921497743927342	CMakeFiles/fused_op.dir/cmake_device_link.o	6af9db3facddcbb7
+747	783	1751921497779927839	fused_op	b64c7a4127bafa4
+1	706	1751921541732530386	CMakeFiles/fused_op.dir/fused_op.cu.o	32d7041c2424c516
+706	739	1751921541768530876	CMakeFiles/fused_op.dir/cmake_device_link.o	6af9db3facddcbb7
+740	783	1751921541812531475	fused_op	b64c7a4127bafa4
+1	685	1751921551180658915	CMakeFiles/fused_op.dir/fused_op.cu.o	32d7041c2424c516
+685	719	1751921551214659377	CMakeFiles/fused_op.dir/cmake_device_link.o	6af9db3facddcbb7
+719	760	1751921551256659947	fused_op	b64c7a4127bafa4
+1	675	1751921682683418943	CMakeFiles/fused_op.dir/fused_op.cu.o	32d7041c2424c516
+675	723	1751921682731419577	CMakeFiles/fused_op.dir/cmake_device_link.o	6af9db3facddcbb7
+723	777	1751921682787420317	fused_op	b64c7a4127bafa4
+1	655	1751922363096289877	CMakeFiles/fused_op.dir/fused_op.cu.o	32d7041c2424c516
+655	723	1751922363164290850	CMakeFiles/fused_op.dir/cmake_device_link.o	6af9db3facddcbb7
+723	779	1751922363221291665	fused_op	b64c7a4127bafa4
+1	669	1751922456967622498	CMakeFiles/fused_op.dir/fused_op.cu.o	32d7041c2424c516
+669	709	1751922457008623076	CMakeFiles/fused_op.dir/cmake_device_link.o	6af9db3facddcbb7
+709	768	1751922457069623935	fused_op	b64c7a4127bafa4
+1	672	1751922486123032590	CMakeFiles/fused_op.dir/fused_op.cu.o	32d7041c2424c516
+672	710	1751922486163033151	CMakeFiles/fused_op.dir/cmake_device_link.o	6af9db3facddcbb7
+710	759	1751922486212033839	fused_op	b64c7a4127bafa4
