@@ -26,6 +26,12 @@ ninja
 ./fused_op
 
 ## Results
+ - unoptimized loop structure: H->w->input channel
+ ```bash
+  for (int i = 0; i < 3; i++) 
+    for (int j = 0; j < 3; j++) 
+        for (int c_in = 0; c_in < C_in; c_in++) 
+ ```
 ```bash
 -------------------------------------------------------------------------------------------------------------------------------
 itr0
@@ -71,4 +77,57 @@ Unfused conv: 66.9193 ms
 Unfused ReLU: 0.605184 ms
 Fused total:  65.2489 ms
 Speedup (conv+relu): 1.03487×
+```
+- Perform loop interchange to use better cache locality and memory coalescing
+```bash
+for (int c_in = 0; c_in < C_in; c_in++)
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+```
+
+```bash
+-------------------------------------------------------------------------------------------------------------------------------
+itr0
+B = 4
+C_IN = 32
+C_OUT = 64
+H = W = 64
+
+Unfused conv: 0.12288 ms
+Unfused ReLU: 0.005376 ms
+Fused total:  0.121856 ms
+Speedup (conv+relu): 1.05252×
+-------------------------------------------------------------------------------------------------------------------------------
+itr1
+B = 4
+C_IN = 32
+C_OUT = 32
+H = W = 64
+
+Unfused conv: 0.065248 ms
+Unfused ReLU: 0.004096 ms
+Fused total:  0.064256 ms
+Speedup (conv+relu): 1.07918×
+-------------------------------------------------------------------------------------------------------------------------------
+itr2
+B = 8
+C_IN = 32
+C_OUT = 64
+H = W = 128
+
+Unfused conv: 0.915296 ms
+Unfused ReLU: 0.021152 ms
+Fused total:  0.917632 ms
+Speedup (conv+relu): 1.0205×
+-------------------------------------------------------------------------------------------------------------------------------
+itr3
+B = 8
+C_IN = 64
+C_OUT = 64
+H = W = 512
+
+Unfused conv: 30.7866 ms
+Unfused ReLU: 0.5888 ms
+Fused total:  31.5525 ms
+Speedup (conv+relu): 0.994386×
 ```

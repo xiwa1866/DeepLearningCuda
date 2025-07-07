@@ -13,20 +13,20 @@
 
 // ------------------------------------------------------------------------------------------------
 // error‐checking macro
-#define CUDA_CHECK(call)                                                \
-  do {                                                                  \
-    cudaError_t e = call;                                               \
-    if (e != cudaSuccess) {                                             \
-      std::cerr << "CUDA error " << cudaGetErrorString(e)               \
-                << " at " << __FILE__ << ":" << __LINE__ << "\n";       \
-      std::exit(1);                                                     \
-    }                                                                   \
+#define CUDA_CHECK(call)                                                       \
+  do {                                                                         \
+    cudaError_t e = call;                                                      \
+    if (e != cudaSuccess) {                                                    \
+      std::cerr << "CUDA error " << cudaGetErrorString(e) << " at "            \
+                << __FILE__ << ":" << __LINE__ << "\n";                        \
+      std::exit(1);                                                            \
+    }                                                                          \
   } while (0)
 
 // ------------------------------------------------------------------------------------------------
 // 1) time_kernel helper: takes grid, block, a kernel function & its args
-template<typename Kernel, typename... Args>
-float time_kernel(dim3 grid, dim3 block, Kernel kernel, Args&&... args) {
+template <typename Kernel, typename... Args>
+float time_kernel(dim3 grid, dim3 block, Kernel kernel, Args &&...args) {
   cudaEvent_t start, stop;
   CUDA_CHECK(cudaEventCreate(&start));
   CUDA_CHECK(cudaEventCreate(&stop));
@@ -68,13 +68,16 @@ conv3x3_dense(const float *__restrict__ X,    // [B][C_in][H][W]
   int start_w = w - 1;
   int start_h = h - 1;
   // apply conv2d
-  for (int i = 0; i < 3; i++) {
-    for (int j = 0; j < 3; j++) {
-      int d_w = start_w + j;
-      int d_h = start_h + i;
-      if (d_w >= 0 && d_h >= 0 && d_w < W && d_h < H) {
-        for (int c_in = 0; c_in < C_in; c_in++) {
-          int kernel_offset = ((c * C_in + c_in) * 3 + i) * 3 + j; // which output idx >> which intput tensor idx >> which row >> which col
+  for (int c_in = 0; c_in < C_in; c_in++) {
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        int d_w = start_w + j;
+        int d_h = start_h + i;
+        if (d_w >= 0 && d_h >= 0 && d_w < W && d_h < H) {
+
+          int kernel_offset = ((c * C_in + c_in) * 3 + i) * 3 +
+                              j; // which output idx >> which intput tensor idx
+                                 // >> which row >> which col
           int input_offset = ((b * C_in + c_in) * H + d_h) * W + d_w;
           tmp += K[kernel_offset] * X[input_offset];
         }
@@ -109,7 +112,7 @@ __global__ void fusedConvBiasReLU_dense(const float *__restrict__ X,
                                         const float *__restrict__ bias,
                                         float *Y, int B, int C_in, int C_out,
                                         int H, int W) {
-                                          int idx = threadIdx.x + blockDim.x * blockIdx.x;
+  int idx = threadIdx.x + blockDim.x * blockIdx.x;
   if (idx >= H * W)
     return;
 
@@ -123,26 +126,29 @@ __global__ void fusedConvBiasReLU_dense(const float *__restrict__ X,
   int start_w = w - 1;
   int start_h = h - 1;
   // apply conv2d
-  for (int i = 0; i < 3; i++) {
-    for (int j = 0; j < 3; j++) {
-      int d_w = start_w + j;
-      int d_h = start_h + i;
-      if (d_w >= 0 && d_h >= 0 && d_w < W && d_h < H) {
-        for (int c_in = 0; c_in < C_in; c_in++) {
-          int kernel_offset = ((c * C_in + c_in) * 3 + i) * 3 + j; // which output idx >> which intput tensor idx >> which row >> which col
+  for (int c_in = 0; c_in < C_in; c_in++) {
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        int d_w = start_w + j;
+        int d_h = start_h + i;
+        if (d_w >= 0 && d_h >= 0 && d_w < W && d_h < H) {
+
+          int kernel_offset = ((c * C_in + c_in) * 3 + i) * 3 +
+                              j; // which output idx >> which intput tensor idx
+                                 // >> which row >> which col
           int input_offset = ((b * C_in + c_in) * H + d_h) * W + d_w;
           tmp += K[kernel_offset] * X[input_offset];
         }
       }
     }
   }
-  if(tmp<0.0f) {
+  if (tmp < 0.0f) {
     tmp = 0.0f;
   }
   // load back to result memory
   int global_idx = ((b * C_out + c) * H + h) * W + w;
   Y[global_idx] = tmp;
-                                        }
+}
 
 bool verifyCPU(const std::vector<float> &h_X,     // [B*C_in*H*W]
                const std::vector<float> &h_K,     // [C_out*C_in*3*3]
@@ -153,13 +159,13 @@ bool verifyCPU(const std::vector<float> &h_X,     // [B*C_in*H*W]
   std::vector<float> h_Y_cpu(elemsY);
 
   // Zero-padded 3×3 conv + bias + ReLU
-  for (int b = 0; b < B; ++b) { // batch
+  for (int b = 0; b < B; ++b) {       // batch
     for (int k = 0; k < C_out; ++k) { // output channel
-      for (int h = 0; h < H; ++h) { // height
+      for (int h = 0; h < H; ++h) {   // height
         for (int w = 0; w < W; ++w) { // weight
           float acc = h_bias[k];
           // sum over input channels and 3×3 window
-          for (int c = 0; c < C_in; ++c) { // input channel
+          for (int c = 0; c < C_in; ++c) {     // input channel
             for (int dy = -1; dy <= 1; ++dy) { // kernel
               for (int dx = -1; dx <= 1; ++dx) {
                 int hn = h + dy, wn = w + dx;
@@ -194,9 +200,8 @@ bool verifyCPU(const std::vector<float> &h_X,     // [B*C_in*H*W]
   return true;
 }
 
-
 void one_iteration(int B, int C_in, int C_out, int H, int W, bool verify) {
-    // dimensions
+  // dimensions
 
   size_t elemsX = size_t(B) * C_in * H * W, elemsY = size_t(B) * C_out * H * W,
          bytesX = elemsX * sizeof(float), bytesY = elemsY * sizeof(float),
@@ -248,16 +253,11 @@ void one_iteration(int B, int C_in, int C_out, int H, int W, bool verify) {
   // ——— Unfused ———
   // 1) Dense 3×3 conv (accumulates bias inside or outside)
   // 2) ReLU
-    float t_unfused = time_kernel(
-    grid, block,
-    conv3x3_dense, d_X, d_K, d_Y, d_bias, B, C_in, C_out, H, W
-  );
+  float t_unfused = time_kernel(grid, block, conv3x3_dense, d_X, d_K, d_Y,
+                                d_bias, B, C_in, C_out, H, W);
   // follow it with ReLU (included in timing? up to you)
-cudaDeviceSynchronize();
-  float t_relu = time_kernel(
-    grid, block,
-    relu4d, d_Y, B, C_out, H, W
-  );
+  cudaDeviceSynchronize();
+  float t_relu = time_kernel(grid, block, relu4d, d_Y, B, C_out, H, W);
   // copy back to host & verify
   cudaMemcpy(h_Y.data(), d_Y, bytesY, cudaMemcpyDeviceToHost);
 
@@ -266,25 +266,20 @@ cudaDeviceSynchronize();
   }
 
   // ——— Fused ———
-  float t_fused = time_kernel(
-    grid, block,
-    fusedConvBiasReLU_dense, d_X, d_K, d_bias, d_Y, B, C_in, C_out, H, W
-  );
+  float t_fused = time_kernel(grid, block, fusedConvBiasReLU_dense, d_X, d_K,
+                              d_bias, d_Y, B, C_in, C_out, H, W);
 
   cudaMemcpy(h_Y.data(), d_Y, bytesY, cudaMemcpyDeviceToHost);
   if (verify && !verifyCPU(h_X, h_K, h_bias, h_Y, B, C_in, C_out, H, W)) {
     std::cout << "GPU fused implemented incorrectly" << std::endl;
   }
-  std::cout
-    << "B = " << B
-    << "\nC_IN = " << C_in
-    << "\nC_OUT = " << C_out
-    << "\nH = W = " << H << "\n\n";
-  std::cout
-    << "Unfused conv: " << t_unfused << " ms\n"
-    << "Unfused ReLU: " << t_relu    << " ms\n"
-    << "Fused total:  " << t_fused   << " ms\n"
-    << "Speedup (conv+relu): " << ((t_unfused + t_relu) / t_fused) << "×\n";
+  std::cout << "B = " << B << "\nC_IN = " << C_in << "\nC_OUT = " << C_out
+            << "\nH = W = " << H << "\n\n";
+  std::cout << "Unfused conv: " << t_unfused << " ms\n"
+            << "Unfused ReLU: " << t_relu << " ms\n"
+            << "Fused total:  " << t_fused << " ms\n"
+            << "Speedup (conv+relu): " << ((t_unfused + t_relu) / t_fused)
+            << "×\n";
 
   // cleanup
   cudaFree(d_X);
@@ -297,9 +292,12 @@ int main() {
   int C_IN[] = {32, 32, 32, 64};
   int C_OUT[] = {64, 32, 64, 64};
   int length[] = {64, 64, 128, 512};
-  for(int i=0; i<4; i++) {
-    std::cout << "-------------------------------------------------------------------------------------------------------------------------------\nitr" << i << "\n";
-    bool verify = true ? i==0 : false;
+  for (int i = 0; i < 4; i++) {
+    std::cout
+        << "-------------------------------------------------------------------"
+           "------------------------------------------------------------\nitr"
+        << i << "\n";
+    bool verify = true ? i == 0 : false;
     one_iteration(B[i], C_IN[i], C_OUT[i], length[i], length[i], verify);
   }
   return 0;
