@@ -20,6 +20,55 @@ We use a host‐side `time_kernel` helper to measure and compare the latency of 
 mkdir build && cd build
 cmake -G Ninja ..
 ninja
+```
 
 ## Running
 ./fused_op
+
+## Results
+```bash
+-------------------------------------------------------------------------------------------------------------------------------
+itr0
+B = 4
+C_IN = 32
+C_OUT = 64
+H = W = 64
+
+Unfused conv: 0.151552 ms
+Unfused ReLU: 0.00496 ms
+Fused total:  0.150528 ms
+Speedup (conv+relu): 1.03975×
+-------------------------------------------------------------------------------------------------------------------------------
+itr1
+B = 4
+C_IN = 32
+C_OUT = 32
+H = W = 64
+
+Unfused conv: 0.083968 ms
+Unfused ReLU: 0.004096 ms
+Fused total:  0.086016 ms
+Speedup (conv+relu): 1.02381×
+-------------------------------------------------------------------------------------------------------------------------------
+itr2
+B = 8
+C_IN = 32
+C_OUT = 64
+H = W = 128
+
+Unfused conv: 1.46125 ms
+Unfused ReLU: 0.021504 ms
+Fused total:  1.44512 ms
+Speedup (conv+relu): 1.02604×
+-------------------------------------------------------------------------------------------------------------------------------
+itr3
+B = 8
+C_IN = 64
+C_OUT = 64
+H = W = 512
+
+Unfused conv: 66.9193 ms
+Unfused ReLU: 0.605184 ms
+Fused total:  65.2489 ms
+Speedup (conv+relu): 1.03487×
+```
