@@ -18,6 +18,10 @@ add_executable(fused_op
   fused_op.cu
 )
 
+add_executable(fused_op_shared_mem
+  fused_op_shared_mem.cu
+)
+
 # target_include_directories(example PRIVATE ${CMAKE_SOURCE_DIR}/include)
 
 # Link against CUDA runtime (usually automatic)

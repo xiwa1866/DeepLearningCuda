@@ -131,3 +131,37 @@ Unfused ReLU: 0.5888 ms
 Fused total:  31.5525 ms
 Speedup (conv+relu): 0.994386×
 ```
+
+
+- Shared Memory investigation
+A optimized version is in fused_op_shared_mem.cu
+The convolution kernels are first loaded to SRAM for faster read
+The bias values are now also stored in \__constant__ memory because the bias tensor is small
+** Note that an earlier attempt was to load input tensor into share_mem but that degrades performance
+
+result is as follows:
+```bash
+--- iter 0 ---
+B=4 C_in=32 C_out=64 H=64 W=64
+unf conv:0.121856  relu:0.00512
+fused-glob:0.121728
+fused-shK:0.118784  speedup:1.02478×
+
+--- iter 1 ---
+B=4 C_in=32 C_out=32 H=64 W=64
+unf conv:0.062464  relu:0.004096
+fused-glob:0.063584
+fused-shK:0.06144  speedup:1.0349×
+
+--- iter 2 ---
+B=8 C_in=32 C_out=64 H=128 W=128
+unf conv:0.91648  relu:0.021408
+fused-glob:0.915456
+fused-shK:0.927552  speedup:0.986959×
+
+--- iter 3 ---
+B=8 C_in=128 C_out=128 H=512 W=512
+unf conv:145.617  relu:2.27296
+fused-glob:145.568
+fused-shK:143.831  speedup:1.01207×
+```
