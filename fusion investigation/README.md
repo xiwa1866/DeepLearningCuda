@@ -3,7 +3,9 @@
 **Author:** Xavier Wang
 
 ## Overview
-This project demonstrates a simple 3×3 dense convolution followed by bias addition and ReLU activation on a 4D tensor (`B × C_in × H × W`) using CUDA. Two implementations are provided:
+This project demonstrates a simple 3×3 dense convolution followed by bias addition and ReLU activation on a 4D tensor (`B × C_in × H × W`) using CUDA. the base fused_op.cu use a untiled version, loading from DRAM, whereas the shared_mem version utilizes \_\_constant\_\_ memory and \_\_shared\_\_ memory to improve performance. In the end, a Triton and native Pytorch implementation are also provided as benchmarks.
+
+In each file, two implementations are provided:
 
 - **Unfused:** Separate kernel launches for convolution and ReLU.  
 - **Fused:** Single kernel that performs convolution, bias add, and ReLU in one pass.
