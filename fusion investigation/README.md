@@ -134,6 +134,7 @@ Speedup (conv+relu): 0.994386×
 
 
 - Shared Memory investigation
+
 A optimized version is in fused_op_shared_mem.cu
 The convolution kernels are first loaded to SRAM for faster read
 The bias values are now also stored in \__constant__ memory because the bias tensor is small
